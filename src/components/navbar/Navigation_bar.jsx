@@ -1,40 +1,46 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext";
 
 export default function Navigation_bar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { getCartItemsCount } = useCart();
+
+  const cartItemsCount = getCartItemsCount();
 
   useEffect(() => {
     scrollTo(0, 0);
   }, []);
   const isActiveLink = (path) => {
     return location.pathname === path;
-  };
-  const getLinkClasses = (path, isButton = false, isMobile = false) => {
+  };  const getLinkClasses = (path, isButton = false, isMobile = false) => {
     const baseClasses = isButton
       ? isMobile
-        ? "w-full text-center px-6 py-4 rounded-xl text-base font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95"
-        : "px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+        ? "w-full text-center px-6 py-4 rounded-xl text-base font-semibold transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] focus:scale-[1.02] touch-manipulation min-h-[44px] flex items-center justify-center"
+        : "px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] focus:scale-[1.02] shadow-lg hover:shadow-xl focus:shadow-xl touch-manipulation min-h-[44px] flex items-center justify-center"
       : isMobile
-      ? "block px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 hover:translate-x-2"
-      : "px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 relative overflow-hidden";
+      ? "block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ease-out hover:translate-x-1 focus:translate-x-1 active:translate-x-2 min-h-[44px] flex items-center touch-manipulation"
+      : "px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 focus:-translate-y-0.5 active:translate-y-0 relative overflow-hidden min-h-[40px] flex items-center justify-center touch-manipulation";
 
     if (isButton) {
       return isActiveLink(path)
-        ? `${baseClasses} bg-white text-green-700 shadow-lg`
-        : `${baseClasses} bg-green-800/80 hover:bg-white hover:text-green-700 text-white backdrop-blur-sm border border-green-500/30`;
+        ? `${baseClasses} bg-white text-green-700 shadow-lg ring-2 ring-green-300/50`
+        : `${baseClasses} bg-green-800/90 hover:bg-white hover:text-green-700 focus:bg-white focus:text-green-700 text-white backdrop-blur-sm border border-green-500/40 hover:border-green-400 focus:border-green-400 focus:ring-2 focus:ring-green-300/50 focus:outline-none`;
     }
 
     return isActiveLink(path)
-      ? `${baseClasses} text-white bg-white/20 shadow-lg ${
+      ? `${baseClasses} text-white bg-white/25 shadow-lg ring-1 ring-white/20 ${
           !isMobile
-            ? "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700"
+            ? "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full focus:before:translate-x-full before:transition-transform before:duration-500"
             : ""
         }`
-      : `${baseClasses} text-green-50 hover:text-white hover:bg-white/10 ${
+      : `${baseClasses} text-green-50 hover:text-white hover:bg-white/15 focus:text-white focus:bg-white/15 focus:ring-1 focus:ring-white/30 focus:outline-none ${
           !isMobile
-            ? "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700"
+            ? "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full focus:before:translate-x-full before:transition-transform before:duration-500"
             : ""
         }`;
   };
@@ -42,9 +48,18 @@ export default function Navigation_bar() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+      closeMenu();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
   return (
     <nav className="bg-gradient-to-r from-green-600 via-green-600 to-green-700 text-white shadow-xl sticky top-0 z-50 border-b border-green-500/30">
@@ -90,29 +105,63 @@ export default function Navigation_bar() {
               </Link>
               <Link to="/shop" className={getLinkClasses("/shop")}>
                 Shop
-              </Link>
-              <Link to="/contact" className={getLinkClasses("/contact")}>
+              </Link>              <Link to="/contact" className={getLinkClasses("/contact")}>
                 Contact
-              </Link>
-              <Link to="/buy&sale" className={getLinkClasses("/buy&sale")}>
-                Buy & Sale
-              </Link>
-              <div className="ml-4 pl-4 border-l border-green-500/30">
-                <Link
-                  to="/register"
-                  className={getLinkClasses("/register", true)}
-                >
-                  Register
-                </Link>
+              </Link>              <Link to="/cart" className={getLinkClasses("/cart")}>
+                <div className="flex items-center space-x-2 relative">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                  </svg>
+                  <span>Cart</span>
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </div>
+              </Link>              <div className="ml-4 pl-4 border-l border-green-500/30">
+                {user ? (
+                  <div className="flex items-center space-x-3">
+                    <Link
+                      to="/profile"
+                      className={getLinkClasses("/profile", true)}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span>{user.email?.split('@')[0] || 'Profile'}</span>
+                      </div>
+                    </Link>                    <button
+                      onClick={handleSignOut}
+                      className="px-4 py-2.5 rounded-lg text-sm font-medium text-red-200 hover:text-white hover:bg-red-600/25 focus:text-white focus:bg-red-600/25 focus:outline-none focus:ring-2 focus:ring-red-400/50 transition-all duration-200 ease-out min-h-[40px] touch-manipulation active:scale-95 transform"
+                    >
+                      Sign Out
+                    </button>
+                  </div>                ) : (
+                  <Link
+                    to="/register"
+                    className={getLinkClasses("/register", true)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
+                      <span>Register</span>
+                    </div>
+                  </Link>
+                )}
               </div>
             </div>
           </div>{" "}
-          {/* Mobile menu button */}
-          <div className="lg:hidden">
+          {/* Mobile menu button */}          <div className="lg:hidden">
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-3 rounded-xl text-white hover:text-green-100 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-300 backdrop-blur-sm"
-              aria-expanded="false"
+              className="inline-flex items-center justify-center p-3 rounded-xl text-white hover:text-green-100 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/10 transition-all duration-200 ease-out backdrop-blur-sm min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transform"
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? "Close main menu" : "Open main menu"}
             >
               <span className="sr-only">Open main menu</span>
               <div className="relative w-6 h-6">
@@ -153,14 +202,12 @@ export default function Navigation_bar() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Mobile Navigation Menu */}
+      </div>      {/* Mobile Navigation Menu */}
       <div
-        className={`lg:hidden transition-all duration-500 ease-in-out ${
+        className={`lg:hidden transition-all duration-300 ease-out ${
           isMenuOpen
-            ? "max-h-screen opacity-100"
-            : "max-h-0 opacity-0 overflow-hidden"
+            ? "max-h-screen opacity-100 transform translate-y-0"
+            : "max-h-0 opacity-0 overflow-hidden transform -translate-y-2"
         }`}
       >
         <div className="px-6 pt-4 pb-8 space-y-3 bg-gradient-to-b from-green-700 to-green-800 border-t border-green-500/30 backdrop-blur-sm">
@@ -232,8 +279,7 @@ export default function Navigation_bar() {
                 </svg>
                 <span>Shop</span>
               </div>
-            </Link>
-            <Link
+            </Link>            <Link
               to="/contact"
               className={getLinkClasses("/contact", false, true)}
               onClick={closeMenu}
@@ -249,50 +295,78 @@ export default function Navigation_bar() {
                 </svg>
                 <span>Contact</span>
               </div>
-            </Link>
-            <Link
-              to="/buy&sale"
-              className={getLinkClasses("/buy&sale", false, true)}
+            </Link>            <Link
+              to="/cart"
+              className={getLinkClasses("/cart", false, true)}
               onClick={closeMenu}
             >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 relative">
                 <svg
                   className="w-5 h-5"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
-                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                  <path
-                    fillRule="evenodd"
-                    d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"
-                    clipRule="evenodd"
-                  />
+                  <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                 </svg>
-                <span>Buy & Sale</span>
+                <span>Cart</span>
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {cartItemsCount}
+                  </span>
+                )}
               </div>
-            </Link>
-          </div>
-          <div className="pt-4 border-t border-green-600/50">
-            <Link
-              to="/register"
-              className={getLinkClasses("/register", true, true)}
-              onClick={closeMenu}
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+            </Link>          </div>          <div className="pt-4 border-t border-green-600/50">
+            {user ? (
+              <div className="space-y-2">
+                <Link
+                  to="/profile"
+                  className={getLinkClasses("/profile", true, true)}
+                  onClick={closeMenu}
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>Register</span>
-              </div>
-            </Link>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span>{user.email?.split('@')[0] || 'Profile'}</span>
+                  </div>
+                </Link>                <button
+                  onClick={handleSignOut}
+                  className="w-full text-center px-6 py-4 rounded-xl text-base font-semibold transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] focus:scale-[1.02] bg-red-600/90 hover:bg-red-600 focus:bg-red-600 text-white focus:outline-none focus:ring-2 focus:ring-red-400/50 min-h-[44px] touch-manipulation"
+                >
+                  Sign Out
+                </button>
+              </div>            ) : (
+              <Link
+                to="/register"
+                className={getLinkClasses("/register", true, true)}
+                onClick={closeMenu}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>Register</span>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </div>
