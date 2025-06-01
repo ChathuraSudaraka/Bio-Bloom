@@ -1,5 +1,5 @@
 import React from 'react';
-import ProductCard from '../productCard/ProductCard';
+import ProductCard from '../itemCard/ProductCard';
 
 const ProductGrid = ({
   currentProducts,
