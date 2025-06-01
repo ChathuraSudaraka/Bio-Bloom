@@ -78,7 +78,7 @@ Message: ${formData.message}`);
               </div>
             </div>
           </div>
-        </section>{" "}
+        </section>
         {/* Contact Form and Info */}
         <section className="py-16 sm:py-20 lg:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -163,7 +163,7 @@ Message: ${formData.message}`);
                     </button>
                   </form>
                 </div>
-              </div>{" "}
+              </div>
               {/* Contact Information */}
               <div className="space-y-6">
                 <div className="relative p-8 rounded-2xl shadow-2xl bg-gradient-to-br from-white to-gray-50 border border-gray-100 overflow-hidden">

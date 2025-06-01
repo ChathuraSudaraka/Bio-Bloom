@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
-import Layout from "../../layout/Layout";
-import ShopFilters from "../../components/shop/ShopFilters";
-import ShopHeader from "../../components/shop/ShopHeader";
-import ProductGrid from "../../components/shop/ProductGrid";
-import ShopPagination from "../../components/shop/ShopPagination";
-import CartIndicator from "../../components/shop/CartIndicator";
-import { sampleProducts } from "../../components/shop/shopData";
+import React, { useState, useMemo } from 'react';
+import Layout from '../../layout/Layout';
+import ShopFilters from '../../components/shop/ShopFilters';
+import ShopHeader from '../../components/shop/ShopHeader';
+import ProductGrid from '../../components/shop/ProductGrid';
+import ShopPagination from '../../components/shop/ShopPagination';
+import CartIndicator from '../../components/shop/CartIndicator';
+import { sampleProducts } from '../../components/shop/shopData';
 
 const priceRanges = [
   { label: "All Prices", min: 0, max: 10000 },
@@ -115,6 +115,7 @@ const Shop = () => {
     startIndex,
     startIndex + itemsPerPage
   );
+
   const addToCart = (product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
@@ -145,7 +146,9 @@ const Shop = () => {
     setCustomPriceMax("");
     setSearchTerm("");
     setCurrentPage(1);
-  };  return (
+  };
+
+  return (
     <Layout>
       <div className="min-h-screen bg-gray-50">
         {/* Cart indicator */}

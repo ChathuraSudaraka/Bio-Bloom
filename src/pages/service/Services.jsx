@@ -71,7 +71,6 @@ const Services = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
-        {" "}
         {/* Hero Section */}
         <section className="py-16 sm:py-20 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -143,7 +142,6 @@ const Services = () => {
                   key={service.id}
                   className="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-white h-full flex flex-col"
                 >
-                  {" "}
                   {/* Image Container */}
                   <div className="relative h-48 sm:h-52 lg:h-48 xl:h-52 overflow-hidden flex-shrink-0">
                     <img
