@@ -1,24 +1,13 @@
 import React from "react";
 
 const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
-  const handleImageError = (e) => {
-    // First try a generic placeholder image
-    if (e.target.src !== "/image/placeholder-product.svg") {
-      e.target.src = "/image/placeholder-product.svg";
-    } else {
-      // If SVG also fails, create a data URL placeholder
-      e.target.src =
-        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPGcgZmlsbD0iIzljYTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPgogICAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmb250LXdlaWdodD0iYm9sZCI+UHJvZHVjdCBJbWFnZTwvdGV4dD4KICA8L2c+Cjwvc3ZnPg==";
-    }
-  };
   return (
     <div className="group bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden hover:shadow-2xl hover:border-green-200 transition-all duration-300 transform hover:-translate-y-1">
       <div className="relative overflow-hidden">
         <img
-          src={product.image}
+          src={product.image || "/image/placeholder-product.svg"}
           alt={product.name}
           className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={handleImageError}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -45,9 +34,6 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
           <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 h-12 leading-tight">
             {product.name}
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {product.description}
-          </p>
         </div>
 
         <div className="flex items-center justify-between mb-4">

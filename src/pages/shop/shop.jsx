@@ -13,7 +13,7 @@ const priceRanges = [
   { label: "$50 - $100", min: 50, max: 100 },
   { label: "$100 - $300", min: 100, max: 300 },
   { label: "$300 - $500", min: 300, max: 500 },
-  { label: "$500+", min: 500, max: 10000 }
+  { label: "$500+", min: 500, max: 10000 },
 ];
 
 const Shop = () => {
@@ -37,6 +37,9 @@ const Shop = () => {
   // Cart state
   const [cart, setCart] = useState([]);
 
+  // Mobile filter state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   // Filter products
   const filteredProducts = useMemo(() => {
     return sampleProducts.filter((product) => {
@@ -53,15 +56,17 @@ const Shop = () => {
         selectedCondition === "All Conditions" ||
         product.condition === selectedCondition;
       const matchesBrand =
-        selectedBrand === "All Brands" || product.brand === selectedBrand;
-
-      // Price filtering
+        selectedBrand === "All Brands" || product.brand === selectedBrand;      // Price filtering
       let priceMin = selectedPriceRange.min;
       let priceMax = selectedPriceRange.max;
 
-      if (customPriceMin && customPriceMax) {
-        priceMin = parseInt(customPriceMin);
-        priceMax = parseInt(customPriceMax);
+      if (customPriceMin !== "" && customPriceMax !== "") {
+        priceMin = parseFloat(customPriceMin) || 0;
+        priceMax = parseFloat(customPriceMax) || 10000;
+      } else if (customPriceMin !== "") {
+        priceMin = parseFloat(customPriceMin) || 0;
+      } else if (customPriceMax !== "") {
+        priceMax = parseFloat(customPriceMax) || 10000;
       }
 
       const matchesPrice =
@@ -134,7 +139,6 @@ const Shop = () => {
     console.log("View details for:", product.name);
     // You can implement navigation to product detail page here
   };
-
   const clearFilters = () => {
     setSelectedCategory("All Categories");
     setSelectedSubcategory("");
@@ -145,14 +149,28 @@ const Shop = () => {
     setCustomPriceMax("");
     setSearchTerm("");
     setCurrentPage(1);
-  };  return (
+  };
+
+  return (
     <Layout>
       <div className="min-h-screen bg-gray-50">
         {/* Cart indicator */}
         <CartIndicator cart={cart} />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex gap-6">
+        <div className="mx-auto sm:px-6 px-4 lg:px-8 py-4 lg:py-8">          {/* Mobile Filter Button */}
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-md shadow-sm hover:from-green-100 hover:to-emerald-100 transition-all duration-200"
+            >
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
+              </svg>
+              <span className="text-sm font-medium text-green-700">Filters</span>
+            </button>
+          </div>
+
+          <div className="flex gap-4 lg:gap-8">
             {/* Left Sidebar - Filters */}
             <ShopFilters
               searchTerm={searchTerm}
@@ -173,10 +191,12 @@ const Shop = () => {
               setCustomPriceMax={setCustomPriceMax}
               setCurrentPage={setCurrentPage}
               clearFilters={clearFilters}
+              isOpen={isFilterOpen}
+              setIsOpen={setIsFilterOpen}
             />
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {/* Top Bar */}
               <ShopHeader
                 sortedProducts={sortedProducts}

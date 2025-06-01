@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductCard from "../itemCard/ProductCard";
+import { Link } from "react-router-dom";
 
 function ProductShowcase() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -86,9 +87,7 @@ function ProductShowcase() {
             Discover amazing second-hand items that are good for you and the
             environment
           </p>{" "}
-        </div>
-
-        {/* Filters */}
+        </div>        {/* Filters */}
         <div className="mb-8 flex flex-wrap gap-4 justify-center">
           {categories.map((category) => (
             <button
@@ -96,26 +95,27 @@ function ProductShowcase() {
               onClick={() => setSelectedCategory(category)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 selectedCategory === category
-                  ? "bg-green-600 text-white shadow-md transform scale-105"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-green-300"
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105"
+                  : "bg-white text-green-700 border border-green-300 hover:bg-green-50 hover:border-green-400 hover:shadow-md"
               }`}
             >
               {category}
             </button>
-          ))}        </div>
+          ))}{" "}
+        </div>
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map(product => (
+          {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
-        </div>
-
-        {/* View More Button */}
+        </div>        {/* View More Button */}
         <div className="text-center mt-12">
-          <button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200">
-            View All Products
-          </button>
+          <Link to="/shop">
+            <button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+              View All Products
+            </button>
+          </Link>
         </div>
       </div>
     </section>
