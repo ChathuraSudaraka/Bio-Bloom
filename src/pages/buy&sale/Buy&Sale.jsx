@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '../../layout/Layout';
 
-function Buy_And_Sale() {
+function BuyAndSale() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
@@ -295,7 +295,7 @@ function Buy_And_Sale() {
   );
 }
 
-export default Buy_And_Sale;
+export default BuyAndSale;
 
 
 

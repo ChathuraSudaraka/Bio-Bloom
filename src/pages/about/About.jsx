@@ -1,23 +1,69 @@
-import React from "react";
 import Layout from "../../layout/Layout";
 
 const About = () => {
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">        {/* Hero Section */}
-        <section className="py-12 xs:py-16 sm:py-20 lg:py-24">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
+        {/* Hero Section */}
+        <section className="py-16 sm:py-20 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 xs:mb-6 leading-tight">
-                About <span className="text-green-600">Recycle Hub</span>
+            <div className="text-center relative">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                About
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
+                  Recycle Hub
+                </span>
               </h1>
-              <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto px-4 leading-relaxed">
+              <p className="text-lg sm:text-xl lg:text-2xl max-w-4xl mx-auto text-gray-600 leading-relaxed">
                 We're on a mission to create a sustainable future by connecting
                 communities through the circular economy of second-hand goods.
               </p>
+              {/* Decorative icons */}
+              <div className="flex justify-center items-center mt-8 space-x-8 opacity-60">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-emerald-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
-        </section>        {/* Mission Section */}
+        </section>
+        {/* Mission Section */}
         <section className="py-12 xs:py-16 sm:py-20 lg:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-8 xs:gap-10 sm:gap-12 lg:gap-16 items-center">
@@ -88,7 +134,9 @@ const About = () => {
                         />
                       </svg>
                     </div>
-                    <p className="text-gray-600">Build sustainable communities</p>
+                    <p className="text-gray-600">
+                      Build sustainable communities
+                    </p>
                   </div>
                 </div>
               </div>
@@ -102,7 +150,6 @@ const About = () => {
             </div>
           </div>
         </section>
-
         {/* Values Section */}
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -161,8 +208,8 @@ const About = () => {
                   Community
                 </h3>
                 <p className="text-gray-600 text-center">
-                  Building strong communities where people can connect, share, and
-                  support each other.
+                  Building strong communities where people can connect, share,
+                  and support each other.
                 </p>
               </div>
 
@@ -186,14 +233,13 @@ const About = () => {
                   Trust
                 </h3>
                 <p className="text-gray-600 text-center">
-                  Ensuring safe, reliable, and transparent transactions for all our
-                  users.
+                  Ensuring safe, reliable, and transparent transactions for all
+                  our users.
                 </p>
               </div>
             </div>
           </div>
         </section>
-
         {/* CTA Section */}
         <section className="py-16 bg-green-600">
           <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
@@ -219,4 +265,3 @@ const About = () => {
 };
 
 export default About;
-

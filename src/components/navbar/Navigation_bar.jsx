@@ -96,8 +96,8 @@ export default function Navigation_bar() {
                 Contact
               </Link>
               <Link
-                to="/buy_and_sale"
-                className={getLinkClasses("/buy_and_sale")}
+                to="/buy&sale"
+                className={getLinkClasses("/buy&sale")}
               >
                 Buy & Sale
               </Link>
@@ -200,8 +200,8 @@ export default function Navigation_bar() {
               </div>
             </Link>
             <Link
-              to="/buy_and_sale"
-              className={getLinkClasses("/buy_and_sale", false, true)}
+              to="/buy&sale"
+              className={getLinkClasses("/buy&sale", false, true)}
               onClick={closeMenu}
             >
               <div className="flex items-center space-x-3">

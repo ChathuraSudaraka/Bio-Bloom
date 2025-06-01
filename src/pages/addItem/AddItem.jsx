@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../../layout/Layout";
 
-export default function Add_Item_form() {
+export default function AddItem() {
   const [formData, setFormData] = useState({
     itemName: "",
     description: "",
