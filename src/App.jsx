@@ -9,6 +9,7 @@ import Shop from "./pages/shop/shop";
 import Register from "./pages/register/Register";
 import Buy_And_Sale from "./pages/buy&sale/Buy_And_Sale";
 import Add_Item_form from "./pages/addItem/Add_Item_form";
+import NotFound from "./pages/404/NotFound";
 
 function App() {
   return (
@@ -25,8 +26,8 @@ function App() {
         <Route path="/buy&sale" element={<Buy_And_Sale />} />
         <Route path="/add-item" element={<Add_Item_form />} />
         <Route path="/add_item" element={<Add_Item_form />} />
-        {/* Fallback route */}
-        <Route path="*" element={<Home />} />
+        {/* 404 Not Found route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
