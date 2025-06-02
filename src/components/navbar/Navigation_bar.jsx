@@ -141,17 +141,30 @@ export default function Navigation_bar() {
                       Sign Out
                     </button>
                   </div>                ) : (
-                  <Link
-                    to="/register"
-                    className={getLinkClasses("/register", true)}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                      </svg>
-                      <span>Register</span>
-                    </div>
-                  </Link>
+                  <div className="flex items-center space-x-3">
+                    <Link
+                      to="/login"
+                      className="px-4 py-2.5 rounded-lg text-sm font-medium text-blue-200 hover:text-white hover:bg-blue-600/25 focus:text-white focus:bg-blue-600/25 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 ease-out min-h-[40px] touch-manipulation active:scale-95 transform"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span>Login</span>
+                      </div>
+                    </Link>
+                    <Link
+                      to="/register"
+                      className={getLinkClasses("/register", true)}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>Register</span>
+                      </div>
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
@@ -346,26 +359,48 @@ export default function Navigation_bar() {
                   Sign Out
                 </button>
               </div>            ) : (
-              <Link
-                to="/register"
-                className={getLinkClasses("/register", true, true)}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Register</span>
-                </div>
-              </Link>
+              <div className="space-y-2">
+                <Link
+                  to="/login"
+                  className="w-full text-center px-6 py-4 rounded-xl text-base font-semibold transition-all duration-200 ease-out transform hover:scale-[1.02] active:scale-[0.98] focus:scale-[1.02] bg-blue-600/90 hover:bg-blue-600 focus:bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-400/50 min-h-[44px] touch-manipulation"
+                  onClick={closeMenu}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Login</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/register"
+                  className={getLinkClasses("/register", true, true)}
+                  onClick={closeMenu}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Register</span>
+                  </div>
+                </Link>
+              </div>
             )}
           </div>
         </div>

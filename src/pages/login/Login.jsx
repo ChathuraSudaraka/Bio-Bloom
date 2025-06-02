@@ -16,12 +16,11 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-
   // Redirect if user is already logged in
   useEffect(() => {
     if (user && !loading) {
-      const from = location.state?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      const redirectTo = location.state?.redirectTo || location.state?.from?.pathname || '/profile';
+      navigate(redirectTo, { replace: true });
     }
   }, [user, loading, navigate, location]);
 
@@ -84,11 +83,9 @@ const Login = () => {
           setErrors({ submit: error.message });
         }
         return;
-      }
-
-      // Redirect to intended page or profile
-      const from = location.state?.from?.pathname || '/profile';
-      navigate(from, { replace: true });
+      }      // Redirect to intended page or profile
+      const redirectTo = location.state?.redirectTo || location.state?.from?.pathname || '/profile';
+      navigate(redirectTo, { replace: true });
       
     } catch (error) {
       setErrors({ submit: 'An unexpected error occurred. Please try again.' });
@@ -150,8 +147,14 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Login Form */}
-          <div className="bg-white py-8 px-6 shadow-xl rounded-lg">
+          {/* Login Form */}        <div className="bg-white py-8 px-6 shadow-xl rounded-lg">
+            {/* Message from redirect */}
+            {location.state?.message && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">{location.state.message}</p>
+              </div>
+            )}
+
             {/* Google Sign-In Button */}
             <div className="mb-6">
               <button

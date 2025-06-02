@@ -86,15 +86,29 @@ const Register = () => {
         return;
       }
 
-      // Show success message and redirect
+      // Show success message
+      setErrors({});
       alert("Registration successful! Please check your email to verify your account.");
-      navigate('/profile');
+      
+      // Wait for user verification before proceeding
+      if (data.user && !data.user.email_confirmed_at) {
+        // User needs to verify email first
+        navigate('/login', { 
+          state: { 
+            message: 'Please verify your email before signing in.',
+            email: formData.email 
+          }
+        });
+      } else {
+        // If email is already confirmed (shouldn't happen in normal flow)
+        navigate('/profile');
+      }
     } catch (error) {
       setErrors({ submit: error.message || 'An unexpected error occurred' });
     } finally {
       setSubmitLoading(false);
     }
-  };  const handleGoogleAuth = async () => {
+  };const handleGoogleAuth = async () => {
     try {
       setSubmitLoading(true);
       setErrors({});

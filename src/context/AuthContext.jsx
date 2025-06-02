@@ -52,8 +52,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-  // Sign up with email and password
+  }, []);  // Sign up with email and password
   const signUp = async (email, password, userData = {}) => {
     try {
       setLoading(true);
@@ -70,16 +69,25 @@ export const AuthProvider = ({ children }) => {
       // Profile will be automatically created by database trigger
       // If we need to update additional profile data, we can do it here
       if (data.user && Object.keys(userData).length > 0) {
-        // Wait a moment for the trigger to create the profile
+        // Wait a moment for the trigger to create the profile, then update it
         setTimeout(async () => {
           try {
+            // First ensure the profile exists
+            await ensureProfile(data.user.id, data.user.email, 'email');
+            
+            // Then update with additional data
             const { error: updateError } = await supabase
               .from('profiles')
-              .update(userData)
+              .update({
+                ...userData,
+                updated_at: new Date().toISOString()
+              })
               .eq('id', data.user.id);
             
             if (updateError) {
               console.warn('Profile update error:', updateError);
+            } else {
+              console.log('Profile data updated successfully');
             }
           } catch (updateError) {
             console.warn('Profile update error:', updateError);
@@ -227,23 +235,24 @@ export const AuthProvider = ({ children }) => {
       return { error };
     }
   };
-
   // Ensure user profile exists (fallback for cases where trigger might not work)
   const ensureProfile = async (userId, userEmail, provider = 'email') => {
     try {
       // First check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('*')
         .eq('id', userId)
         .single();
 
       if (existingProfile) {
+        console.log('Profile already exists:', existingProfile);
         return { data: existingProfile, error: null };
       }
 
       // If no profile exists, create one
       if (fetchError && fetchError.code === 'PGRST116') { // No rows returned
+        console.log('Creating new profile for user:', userEmail);
         const { data, error } = await supabase
           .from('profiles')
           .insert([
@@ -251,7 +260,10 @@ export const AuthProvider = ({ children }) => {
               id: userId,
               email: userEmail,
               auth_provider: provider,
-              created_at: new Date().toISOString()
+              profile_completed: false,
+              payment_method_setup: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             }
           ])
           .select()
@@ -262,6 +274,7 @@ export const AuthProvider = ({ children }) => {
           return { data: null, error };
         }
 
+        console.log('Profile created successfully:', data);
         return { data, error: null };
       }
 

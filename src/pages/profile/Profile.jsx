@@ -33,7 +33,12 @@ const Profile = () => {
     cardholder_name: ''
   });  useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/register');
+      navigate('/login', { 
+        state: { 
+          message: 'Please sign in to access your profile.',
+          redirectTo: '/profile'
+        }
+      });
       return;
     }
 
