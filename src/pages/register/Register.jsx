@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Layout from "../../layout/Layout";
-import { validateForm, validateField } from "./validation";
+import { validateForm, validateField, validateGoogleUserForm } from "./validation";
 import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { signUp, signInWithGoogle, loading } = useAuth();
+  const location = useLocation();
+  const { signUp, signInWithGoogle, loading, user } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -21,15 +23,51 @@ const Register = () => {
   const [touched, setTouched] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);  const handleInputChange = (e) => {
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
+
+  // Pre-fill form with Google OAuth data if available
+  useEffect(() => {
+    if (user && user.app_metadata?.provider === 'google') {
+      setIsGoogleUser(true);
+      setFormData(prev => ({
+        ...prev,
+        fullName: user.user_metadata?.full_name || user.user_metadata?.name || "",
+        email: user.email || "",
+      }));
+      
+      // Mark these fields as touched since they're pre-filled
+      setTouched(prev => ({
+        ...prev,
+        fullName: true,
+        email: true,
+      }));
+    }
+  }, [user]);
+
+  // Redirect if user is already authenticated and has complete profile
+  useEffect(() => {
+    if (user && !loading) {
+      // Check if this is a Google user who needs to complete registration
+      if (user.app_metadata?.provider === 'google') {
+        // Allow Google users to complete their profile
+        return;
+      }
+      // Redirect other authenticated users
+      navigate('/profile');
+    }
+  }, [user, loading, navigate]);const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
-
-    // Real-time validation
+    }));    // Real-time validation
     if (touched[name]) {
+      // Skip password validation for Google users
+      if (isGoogleUser && (name === 'password' || name === 'confirmPassword')) {
+        return;
+      }
+      
       const validation = validateField(name, value, { ...formData, [name]: value });
       setErrors((prev) => ({
         ...prev,
@@ -43,9 +81,12 @@ const Register = () => {
     setTouched((prev) => ({
       ...prev,
       [name]: true,
-    }));
-
-    // Validate on blur
+    }));    // Validate on blur
+    // Skip password validation for Google users
+    if (isGoogleUser && (name === 'password' || name === 'confirmPassword')) {
+      return;
+    }
+    
     const validation = validateField(name, value, formData);
     setErrors((prev) => ({
       ...prev,
@@ -53,10 +94,50 @@ const Register = () => {
     }));
   };  const confirmDetails = async (e) => {
     e.preventDefault();
-    setSubmitLoading(true);
+    setSubmitLoading(true);    try {
+      // For Google users, we only need to validate and save the additional profile data
+      if (isGoogleUser && user) {
+        // Validate Google user form (excludes password fields)
+        const validation = validateGoogleUserForm(formData);
+        
+        if (!validation.isValid) {
+          setErrors(validation.errors);
+          setTouched(prev => ({
+            ...prev,
+            ...Object.keys(validation.errors).reduce((acc, field) => ({ ...acc, [field]: true }), {})
+          }));
+          return;
+        }
 
-    try {
-      // Handle registration
+        // Update the existing Google user's profile
+        const { updateProfile } = await import('../../context/AuthContext');
+        const userData = {
+          full_name: formData.fullName,
+          phone_number: formData.phoneNumber,
+          address: formData.address,
+          city: formData.city,
+          nic_number: formData.nicNumber,
+          profile_completed: true,
+          payment_method_setup: false
+        };
+
+        // Update profile directly since user is already authenticated
+        const { error } = await supabase.from('profiles')
+          .update(userData)
+          .eq('id', user.id);
+
+        if (error) {
+          setErrors({ submit: error.message });
+          return;
+        }
+
+        setErrors({});
+        alert("Profile completed successfully!");
+        navigate('/profile');
+        return;
+      }
+
+      // Regular email registration flow
       const validation = validateForm(formData);
       
       if (!validation.isValid) {
@@ -151,47 +232,67 @@ const Register = () => {
           </div>
 
           {/* Registration Form */}
-          <div className="max-w-2xl mx-auto p-8 rounded-2xl shadow-2xl bg-white">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
-              <p className="text-gray-600 mt-2">
-                Join our eco-friendly marketplace today
-              </p>
-            </div>
-
-              {/* Google Sign-In Button */}
-              <div className="mb-6">
-                <button
-                  type="button"
-                  onClick={handleGoogleAuth}
-                  disabled={submitLoading}
-                  className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >                  <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          <div className="max-w-2xl mx-auto p-8 rounded-2xl shadow-2xl bg-white">          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {isGoogleUser ? 'Complete Your Profile' : 'Create Account'}
+            </h2>
+            <p className="text-gray-600 mt-2">
+              {isGoogleUser 
+                ? 'Please fill in the remaining information to complete your profile'
+                : 'Join our eco-friendly marketplace today'
+              }
+            </p>
+            {isGoogleUser && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  {submitLoading ? 'Creating account...' : 'Sign up with Google'}
-                </button>
-              </div>              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
-                    Or create account with email
-                  </span>
+                  <p className="text-sm text-green-800">
+                    Signed in with Google as <strong>{user?.email}</strong>
+                  </p>
                 </div>
               </div>
+            )}
+          </div>            {!isGoogleUser && (
+              <>
+                {/* Google Sign-In Button */}
+                <div className="mb-6">
+                  <button
+                    type="button"
+                    onClick={handleGoogleAuth}
+                    disabled={submitLoading}
+                    className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    {submitLoading ? 'Creating account...' : 'Sign up with Google'}
+                  </button>
+                </div>
+
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">
+                      Or create account with email
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
 
               {/* Error Message */}
               {errors.submit && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-600">{errors.submit}</p>
                 </div>
-              )}              <form onSubmit={confirmDetails} className="space-y-6" noValidate>
-                {/* Personal Information */}
+              )}              <form onSubmit={confirmDetails} className="space-y-6" noValidate>                {/* Personal Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">
@@ -204,9 +305,10 @@ const Register = () => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       placeholder="Enter your full name"
+                      readOnly={isGoogleUser}
                       className={`w-full px-4 py-3 rounded-lg border bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none ${
                         errors.fullName ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      } ${isGoogleUser ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                     />
                     {errors.fullName && (
                       <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
@@ -224,89 +326,97 @@ const Register = () => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       placeholder="Enter your email"
+                      readOnly={isGoogleUser}
                       className={`w-full px-4 py-3 rounded-lg border bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      } ${isGoogleUser ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                     />
                     {errors.email && (
                       <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                     )}
                   </div>
-                </div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                        placeholder="Create a password"
-                        className={`w-full px-4 py-3 pr-12 rounded-lg border bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none ${
-                          errors.password ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? (
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
+                </div>                {/* Password fields - only for email registration */}
+                {!isGoogleUser && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          onBlur={handleBlur}
+                          placeholder="Create a password"
+                          className={`w-full px-4 py-3 pr-12 rounded-lg border bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none ${
+                            errors.password ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                      )}
                     </div>
-                    {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                    )}
-                  </div>                  <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                      Confirm Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                        placeholder="Confirm your password"
-                        className={`w-full px-4 py-3 pr-12 rounded-lg border bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none ${
-                          errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                      >
-                        {showConfirmPassword ? (
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                    {errors.confirmPassword && (
-                      <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-                </div>                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700">
+                        Confirm Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleInputChange}
+                          onBlur={handleBlur}
+                          placeholder="Confirm your password"
+                          className={`w-full px-4 py-3 pr-12 rounded-lg border bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none ${
+                            errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                        >
+                          {showConfirmPassword ? (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                      {errors.confirmPassword && (
+                        <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                      )}
+                    </div>                  </div>
+                )}
+
+                {/* Contact Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">
                       Phone Number
@@ -381,31 +491,32 @@ const Register = () => {
                     {errors.city && (
                       <p className="mt-1 text-sm text-red-600">{errors.city}</p>
                     )}
-                  </div>                </div>
-
-                {/* Submit Button */}
+                  </div>                </div>                {/* Submit Button */}
                 <div className="mt-8">
                   <button
                     type="submit"
                     disabled={submitLoading}
                     className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    {submitLoading ? 'Creating account...' : 'Create Account'}
+                    {submitLoading 
+                      ? (isGoogleUser ? 'Completing profile...' : 'Creating account...')
+                      : (isGoogleUser ? 'Complete Profile' : 'Create Account')
+                    }
                   </button>
-                </div>
-
-                {/* Login Link */}
-                <div className="text-center mt-6">
-                  <p className="text-gray-600">
-                    Already have an account?{' '}
-                    <Link
-                      to="/login"
-                      className="text-green-600 hover:text-green-700 font-semibold transition-colors duration-200"
-                    >
-                      Sign in here
-                    </Link>
-                  </p>
-                </div>
+                </div>                {/* Login Link - only for email registration */}
+                {!isGoogleUser && (
+                  <div className="text-center mt-6">
+                    <p className="text-gray-600">
+                      Already have an account?{' '}
+                      <Link
+                        to="/login"
+                        className="text-green-600 hover:text-green-700 font-semibold transition-colors duration-200"
+                      >
+                        Sign in here
+                      </Link>
+                    </p>
+                  </div>
+                )}
               </form>
             </div>
           </div>

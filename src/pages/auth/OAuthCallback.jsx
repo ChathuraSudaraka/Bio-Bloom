@@ -11,17 +11,24 @@ const OAuthCallback = () => {
   useEffect(() => {
     // Handle OAuth callback
     const handleCallback = async () => {
-      try {
-        // Wait for auth state to settle
+      try {        // Wait for auth state to settle
         if (!loading) {
           if (user) {
             console.log('OAuth successful, user:', user.email);
             setStatus('success');
             
-            // Redirect to profile after a short delay
-            setTimeout(() => {
-              navigate('/profile', { replace: true });
-            }, 2000);
+            // Check if user needs to complete profile (Google users)
+            if (user.app_metadata?.provider === 'google') {
+              // Redirect Google users to complete registration
+              setTimeout(() => {
+                navigate('/register', { replace: true });
+              }, 2000);
+            } else {
+              // Redirect other users to profile
+              setTimeout(() => {
+                navigate('/profile', { replace: true });
+              }, 2000);
+            }
           } else {
             console.log('OAuth failed - no user found');
             setStatus('error');
@@ -71,12 +78,14 @@ const OAuthCallback = () => {
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            </div>            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Sign in successful!
             </h2>
             <p className="text-gray-600 mb-4">
-              Welcome to Recycle Hub. Redirecting to your profile...
+              {user?.app_metadata?.provider === 'google' 
+                ? 'Welcome to Recycle Hub. Redirecting to complete your profile...'
+                : 'Welcome to Recycle Hub. Redirecting to your profile...'
+              }
             </p>
           </div>
         </div>

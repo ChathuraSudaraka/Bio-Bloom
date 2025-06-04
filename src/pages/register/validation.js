@@ -263,8 +263,6 @@ export const validateCity = (city) => {
   return { isValid: true, error: "" };
 };
 
-
-
 /**
  * Validates the entire form
  * @param {object} formData - The form data object
@@ -355,4 +353,41 @@ export const validateField = (fieldName, value, formData = {}) => {
     default:
       return { isValid: true, error: "" };
   }
+};
+
+/**
+ * Validates form data for Google OAuth users (excludes password validation)
+ * @param {object} formData - The form data to validate
+ * @returns {object} - Object with isValid boolean and errors object
+ */
+export const validateGoogleUserForm = (formData) => {
+  let isValid = true;
+  const errors = {};
+
+  // Only validate required fields for Google users (no password fields)
+  const phoneValidation = validatePhoneNumber(formData.phoneNumber);
+  if (!phoneValidation.isValid) {
+    errors.phoneNumber = phoneValidation.error;
+    isValid = false;
+  }
+
+  const nicValidation = validateNICNumber(formData.nicNumber);
+  if (!nicValidation.isValid) {
+    errors.nicNumber = nicValidation.error;
+    isValid = false;
+  }
+
+  const addressValidation = validateAddress(formData.address);
+  if (!addressValidation.isValid) {
+    errors.address = addressValidation.error;
+    isValid = false;
+  }
+
+  const cityValidation = validateCity(formData.city);
+  if (!cityValidation.isValid) {
+    errors.city = cityValidation.error;
+    isValid = false;
+  }
+
+  return { isValid, errors };
 };
